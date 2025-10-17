@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>總和出牌遊戲 Sum Match</title>
+<style>
+  body { font-family: "Microsoft JhengHei"; background:#f7f7f7; text-align:center; }
+  h1 { color:#333; }
+  #game { margin-top:20px; }
+  .cards { margin:10px auto; display:flex; justify-content:center; flex-wrap:wrap; max-width:400px; }
+  .card { border:1px solid #999; border-radius:8px; padding:10px 15px; margin:5px; background:white; cursor:pointer; transition:all .2s; }
+  .card.selected { background:#ffd966; transform:scale(1.1); }
+  #dice { font-size:20px; margin:10px; }
+  button { padding:10px 20px; margin:10px; border:none; border-radius:5px; background:#6a5acd; color:white; cursor:pointer; }
+  button:disabled { background:#ccc; cursor:not-allowed; }
+  #log { background:white; border-radius:10px; margin:20px auto; max-width:480px; padding:10px; text-align:left; height:150px; overflow:auto; }
+  #restartBtn { display:none; background:#28a745; }
+</style>
+</head>
+<body>
+
+<h1>🎲 總和出牌遊戲 Sum Match</h1>
+
+<div id="game">
+  <div id="dice">請擲骰開始</div>
+  <button id="rollBtn" onclick="rollDice()">🎲 擲骰</button>
+  <button id="playBtn" onclick="playCards()" disabled>出牌</button>
+  <button id="restartBtn" onclick="restartGame()">🔁 重新開始</button>
+  <h2>你的手牌</h2>
+  <div id="playerCards" class="cards"></div>
+</div>
+
+<h2>🧠 電腦狀態</h2>
+<div id="aiCards" class="cards"></div>
+
+<div id="log"></div>
+
+<script>
+let playerCards, aiCards, selected, dice1, dice2, target, playerTurn, diceRolled;
+
+function initGame(){
+  playerCards = [1,2,3,4,5,6,7,8,9,10];
+  aiCards = [1,2,3,4,5,6,7,8,9,10];
+  selected = [];
+  dice1=0; dice2=0; target=0;
+  playerTurn = true;
+  diceRolled = false;
+  document.getElementById("log").innerHTML = "";
+  document.getElementById("dice").innerText = "請擲骰開始";
+  document.getElementById("rollBtn").disabled = false;
+  document.getElementById("playBtn").disabled = true;
+  document.getElementById("restartBtn").style.display = "none";
+  renderCards();
+}
+
+function renderCards() {
+  const p = document.getElementById("playerCards");
+  p.innerHTML = "";
+  playerCards.forEach(c=>{
+    const div = document.createElement("div");
+    div.className = "card" + (selected.includes(c)?" selected":"");
+    div.innerText = c;
+    div.onclick = ()=>toggleSelect(c);
+    p.appendChild(div);
+  });
+  document.getElementById("aiCards").innerText = "剩餘牌數：" + aiCards.length;
+}
+
+function toggleSelect(num){
+  if(!playerTurn || !diceRolled) return;
+  if(selected.includes(num)) selected = selected.filter(n=>n!==num);
+  else selected.push(num);
+  renderCards();
+}
+
+function rollDice(){
+  if(!playerTurn || diceRolled) return;
+  dice1 = Math.floor(Math.random()*6)+1;
+  dice2 = Math.floor(Math.random()*6)+1;
+  target = dice1 + dice2;
+  diceRolled = true;
+  document.getElementById("dice").innerText = `🎯 本回合目標總和：${target}（${dice1}+${dice2}）`;
+  document.getElementById("rollBtn").disabled = true;
+  document.getElementById("playBtn").disabled = false;
+}
+
+function playCards(){
+  if(!playerTurn || !diceRolled) return;
+  const sum = selected.reduce((a,b)=>a+b,0);
+  if(sum === target){
+    log(`你出牌：${selected.join("+")} = ${target}`);
+    playerCards = playerCards.filter(c=>!selected.includes(c));
+    selected = [];
+    renderCards();
+    diceRolled = false;
+    document.getElementById("rollBtn").disabled = false;
+    document.getElementById("playBtn").disabled = true;
+    if(playerCards.length===0){ endGame("你出完所有牌，勝利！"); return; }
+    playerTurn=false;
+    setTimeout(aiTurn,1000);
+  } else {
+    log("❌ 無法出牌，遊戲結束！");
+    endGame("你無法出牌！");
+  }
+}
+
+function aiTurn(){
+  dice1 = Math.floor(Math.random()*6)+1;
+  dice2 = Math.floor(Math.random()*6)+1;
+  target = dice1 + dice2;
+  log(`🤖 電腦擲出 ${dice1}+${dice2} = ${target}`);
+  let combos = findCombos(aiCards,target);
+  if(combos.length>0){
+    let play = combos[Math.floor(Math.random()*combos.length)];
+    aiCards = aiCards.filter(c=>!play.includes(c));
+    log(`🤖 電腦出牌：${play.join("+")} = ${target}`);
+    if(aiCards.length===0){ endGame("電腦出完所有牌，勝利！"); return; }
+    playerTurn=true;
+    diceRolled=false;
+    document.getElementById("rollBtn").disabled = false;
+    document.getElementById("playBtn").disabled = true;
+  } else {
+    log("🤖 電腦無法出牌！");
+    endGame("電腦無法出牌，遊戲結束！");
+  }
+  renderCards();
+}
+
+function findCombos(arr, target){
+  let results = [];
+  let n = arr.length;
+  for(let i=0;i<(1<<n);i++){
+    let subset=[];
+    for(let j=0;j<n;j++){
+      if(i&(1<<j)) subset.push(arr[j]);
+    }
+    if(subset.length>0 && subset.reduce((a,b)=>a+b,0)===target) results.push(subset);
+  }
+  return results;
+}
+
+function log(msg){
+  const box = document.getElementById("log");
+  box.innerHTML += msg + "<br>";
+  box.scrollTop = box.scrollHeight;
+}
+
+function endGame(msg){
+  const totalP = playerCards.reduce((a,b)=>a+b,0);
+  const totalA = aiCards.reduce((a,b)=>a+b,0);
+  log(`<b>🏁 ${msg}</b><br>你剩餘總和：${totalP}，電腦剩餘總和：${totalA}`);
+  if(totalP<totalA) log("🎉 你贏了！");
+  else if(totalP>totalA) log("😅 電腦獲勝！");
+  else log("🤝 平手！");
+  document.getElementById("rollBtn").disabled = true;
+  document.getElementById("playBtn").disabled = true;
+  document.getElementById("restartBtn").style.display = "inline-block";
+  playerTurn=false;
+  diceRolled=false;
+}
+
+function restartGame(){
+  log("🔁 重新開始新遊戲！");
+  initGame();
+}
+
+initGame();
+</script>
+</body>
+</html>
