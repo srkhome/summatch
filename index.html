@@ -5,17 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>總和出牌遊戲 Sum Match</title>
 <style>
-  body { font-family: "Microsoft JhengHei"; background:#f7f7f7; text-align:center; }
-  h1 { color:#333; }
-  #game { margin-top:20px; }
+  body { font-family:"Microsoft JhengHei"; background:#f7f7f7; text-align:center; margin:0; }
+  h1 { color:#333; margin-top:15px; }
+  #game { margin-top:10px; }
   .cards { margin:10px auto; display:flex; justify-content:center; flex-wrap:wrap; max-width:400px; }
   .card { border:1px solid #999; border-radius:8px; padding:10px 15px; margin:5px; background:white; cursor:pointer; transition:all .2s; }
   .card.selected { background:#ffd966; transform:scale(1.1); }
   #dice { font-size:20px; margin:10px; }
-  button { padding:10px 20px; margin:10px; border:none; border-radius:5px; background:#6a5acd; color:white; cursor:pointer; }
+  button { padding:10px 18px; margin:6px; border:none; border-radius:5px; background:#6a5acd; color:white; cursor:pointer; }
   button:disabled { background:#ccc; cursor:not-allowed; }
   #log { background:white; border-radius:10px; margin:20px auto; max-width:480px; padding:10px; text-align:left; height:150px; overflow:auto; }
   #restartBtn { display:none; background:#28a745; }
+  #readmeBtn { background:#007bff; }
+
+  /* Modal 樣式 */
+  #readmeModal {
+    display:none;
+    position:fixed;
+    z-index:999;
+    top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.6);
+  }
+  #readmeContent {
+    background:white;
+    border-radius:10px;
+    padding:20px;
+    max-width:600px;
+    margin:60px auto;
+    text-align:left;
+    max-height:80%;
+    overflow:auto;
+  }
+  #closeReadme {
+    float:right;
+    background:#dc3545;
+    color:white;
+    border:none;
+    border-radius:5px;
+    padding:6px 10px;
+    cursor:pointer;
+  }
 </style>
 </head>
 <body>
@@ -27,6 +56,7 @@
   <button id="rollBtn" onclick="rollDice()">🎲 擲骰</button>
   <button id="playBtn" onclick="playCards()" disabled>出牌</button>
   <button id="restartBtn" onclick="restartGame()">🔁 重新開始</button>
+  <button id="readmeBtn" onclick="openReadme()">📘 說明</button>
   <h2>你的手牌</h2>
   <div id="playerCards" class="cards"></div>
 </div>
@@ -35,6 +65,50 @@
 <div id="aiCards" class="cards"></div>
 
 <div id="log"></div>
+
+<!-- 📘 README 彈窗 -->
+<div id="readmeModal" onclick="closeReadme(event)">
+  <div id="readmeContent">
+    <button id="closeReadme" onclick="closeReadme(event)">關閉 ✖</button>
+    <h2>📘 遊戲說明（README）</h2>
+    <p><b>玩法簡介：</b><br>
+    玩家與電腦輪流擲骰，根據兩顆骰子的總和出牌。<br>
+    若任一方無法出牌，遊戲立即結束，剩餘牌點數較小者勝利。</p>
+
+    <h3>🎯 規則重點</h3>
+    <ul>
+      <li>雙方各持 1～10 的牌。</li>
+      <li>擲骰後，以骰子總和為目標出牌。</li>
+      <li>可出多張加總＝總和，或出單張等於總和的牌。</li>
+      <li>若無法出牌 → 遊戲結束。</li>
+    </ul>
+
+    <h3>🏁 勝負判定</h3>
+    <ul>
+      <li>有人出完牌 → 該方直接獲勝。</li>
+      <li>若遊戲提前結束，計算雙方剩餘牌總和。</li>
+      <li>總和較小者勝。</li>
+    </ul>
+
+    <h3>🕹️ 操作說明</h3>
+    <ul>
+      <li>🎲「擲骰」：產生目標總和。</li>
+      <li>🃏 點擊手牌選擇組合。</li>
+      <li>✅「出牌」：若總和符合即成功。</li>
+      <li>🔁「重新開始」：重新開局。</li>
+      <li>📘「說明」：開啟本視窗。</li>
+    </ul>
+
+    <h3>💡 小技巧</h3>
+    <ul>
+      <li>優先出難配的數字（如 1、9、10）。</li>
+      <li>觀察常出現的總和（如 7、8、9）。</li>
+      <li>嘗試用多張組合提高靈活性。</li>
+    </ul>
+
+    <p style="text-align:center;color:#666;">作者：柯勝仁<br>© 2025 Sum Match Demo</p>
+  </div>
+</div>
 
 <script>
 let playerCards, aiCards, selected, dice1, dice2, target, playerTurn, diceRolled;
@@ -161,8 +235,17 @@ function endGame(msg){
 }
 
 function restartGame(){
-  log("🔁 重新開始新遊戲！");
   initGame();
+}
+
+/* 📘 README 彈窗控制 */
+function openReadme(){
+  document.getElementById("readmeModal").style.display = "block";
+}
+function closeReadme(event){
+  if(event.target.id === "readmeModal" || event.target.id === "closeReadme"){
+    document.getElementById("readmeModal").style.display = "none";
+  }
 }
 
 initGame();
