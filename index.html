@@ -12,13 +12,13 @@
   .card { border:1px solid #999; border-radius:8px; padding:10px 15px; margin:5px; background:white; cursor:pointer; transition:all .2s; }
   .card.selected { background:#ffd966; transform:scale(1.1); }
   #dice { font-size:20px; margin:10px; }
-  button { padding:10px 18px; margin:6px; border:none; border-radius:5px; background:#6a5acd; color:white; cursor:pointer; }
+  button { padding:10px 18px; margin:6px; border:none; border-radius:5px; background:#6a5acd; color:white; cursor:pointer; font-size:16px; }
   button:disabled { background:#ccc; cursor:not-allowed; }
   #log { background:white; border-radius:10px; margin:20px auto; max-width:480px; padding:10px; text-align:left; height:150px; overflow:auto; }
   #restartBtn { display:none; background:#28a745; }
-  #readmeBtn { background:#007bff; }
+  #readmeBtn { background:#007bff; display:inline-block; }
 
-  /* Modal 樣式 */
+  /* 📘 README Modal */
   #readmeModal {
     display:none;
     position:fixed;
@@ -51,12 +51,14 @@
 
 <h1>🎲 總和出牌遊戲 Sum Match</h1>
 
+<!-- 🎮 主控制區 -->
 <div id="game">
   <div id="dice">請擲骰開始</div>
   <button id="rollBtn" onclick="rollDice()">🎲 擲骰</button>
   <button id="playBtn" onclick="playCards()" disabled>出牌</button>
   <button id="restartBtn" onclick="restartGame()">🔁 重新開始</button>
-  <button id="readmeBtn" onclick="openReadme()">📘 說明</button>
+  <button id="readmeBtn" onclick="openReadme()">📘 說明</button> <!-- ✅ 永遠顯示 -->
+  
   <h2>你的手牌</h2>
   <div id="playerCards" class="cards"></div>
 </div>
@@ -234,6 +236,7 @@ function endGame(msg){
   diceRolled=false;
 }
 
+/* 🔁 重新開始 */
 function restartGame(){
   initGame();
 }
@@ -248,6 +251,7 @@ function closeReadme(event){
   }
 }
 
+/* 啟動遊戲 */
 initGame();
 </script>
 </body>
